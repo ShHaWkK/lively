@@ -93,6 +93,7 @@ namespace Lively.Core
             this.rawInput.MouseMoveRaw += RawInput_MouseMoveRaw;
             this.rawInput.MouseDownRaw += RawInput_MouseDownRaw;
             this.rawInput.MouseUpRaw += RawInput_MouseUpRaw;
+            this.rawInput.MouseWheelRaw += RawInput_MouseWheelRaw;
             this.rawInput.KeyboardClickRaw += RawInput_KeyboardClickRaw;
 
             // Initialize desktop and update handles.
@@ -1187,6 +1188,29 @@ namespace Lively.Core
                         if (InputUtil.IsMouseButtonsSwapped)
                             ForwardMouseToWallpapers(e.X, e.Y, InputUtil.MouseLeftButtonUp);
                         break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+            }
+        }
+
+        private void RawInput_MouseWheelRaw(object sender, MouseWheelRawArgs e)
+        {
+            if (userSettings.Settings.InputForward == InputForwardMode.off || !IsDesktop())
+                return;
+
+            try
+            {
+                var display = displayManager.GetDisplayMonitorFromPoint(new System.Drawing.Point(e.X, e.Y));
+                foreach (var wallpaper in Wallpapers)
+                {
+                    if (wallpaper.Category.IsDeviceInputAllowed() &&
+                        (wallpaper.Screen.Equals(display) || userSettings.Settings.WallpaperArrangement == WallpaperArrangement.span))
+                    {
+                        InputUtil.MouseWheel(wallpaper.InputHandle, e.X, e.Y, e.Delta);
+                    }
                 }
             }
             catch (Exception ex)
