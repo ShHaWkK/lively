@@ -18,6 +18,7 @@ namespace Lively.Views.WindowMsg
         public event EventHandler<MouseRawArgs> MouseMoveRaw;
         public event EventHandler<MouseClickRawArgs> MouseDownRaw;
         public event EventHandler<MouseClickRawArgs> MouseUpRaw;
+        public event EventHandler<MouseWheelRawArgs> MouseWheelRaw;
         public event EventHandler<KeyboardClickRawArgs> KeyboardClickRaw;
 
         public RawInputMsgWindow()
@@ -122,31 +123,8 @@ namespace Lively.Views.WindowMsg
                                 break;
                             case Linearstar.Windows.RawInput.Native.RawMouseButtonFlags.MouseWheel:
                                 {
-                                    //Disabled, not tested yet.
-                                    /*
-                                    https://github.com/ivarboms/game-engine/blob/master/Input/RawInput.cpp
-                                    Mouse wheel deltas are represented as multiples of 120.
-                                    MSDN: The delta was set to 120 to allow Microsoft or other vendors to build
-                                    finer-resolution wheels (a freely-rotating wheel with no notches) to send more
-                                    messages per rotation, but with a smaller value in each message.
-                                    Because of this, the value is converted to a float in case a mouse's wheel
-                                    reports a value other than 120, in which case dividing by 120 would produce
-                                    a very incorrect value.
-                                    More info: http://social.msdn.microsoft.com/forums/en-US/gametechnologiesgeneral/thread/1deb5f7e-95ee-40ac-84db-58d636f601c7/
-                                    */
-
-                                    /*
-                                    // One wheel notch is represented as this delta (WHEEL_DELTA).
-                                    const float oneNotch = 120;
-
-                                    // Mouse wheel delta in multiples of WHEEL_DELTA (120).
-                                    float mouseWheelDelta = mouse.Mouse.RawButtons;
-
-                                    // Convert each notch from [-120, 120] to [-1, 1].
-                                    mouseWheelDelta = mouseWheelDelta / oneNotch;
-
-                                    MouseScrollSimulate(mouseWheelDelta);
-                                    */
+                                    MouseWheelRaw?.Invoke(this,
+                                        new MouseWheelRawArgs(P.X, P.Y, mouse.Mouse.ButtonData));
                                 }
                                 break;
                         }
@@ -189,6 +167,15 @@ namespace Lively.Views.WindowMsg
         public MouseClickRawArgs(int x, int y, RawInputMouseBtn btn) : base(x, y)
         {
             Button = btn;
+        }
+    }
+
+    public class MouseWheelRawArgs : MouseRawArgs
+    {
+        public int Delta { get; }
+        public MouseWheelRawArgs(int x, int y, int delta) : base(x, y)
+        {
+            Delta = delta;
         }
     }
 
