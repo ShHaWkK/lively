@@ -28,6 +28,18 @@ namespace Lively.Common.Helpers
         public static void MouseMove(IntPtr hwnd, int x, int y) =>
             ForwardMessageMouse(hwnd, x, y, (int)NativeMethods.WM.MOUSEMOVE, MK_MOVE);
 
+        public static void MouseWheel(IntPtr hwnd, int x, int y, int delta)
+        {
+            // WM_MOUSEWHEEL stores the signed wheel delta in the high-order word
+            // of wParam and expects the cursor position in screen coordinates.
+            var wParam = new IntPtr(unchecked((long)((uint)(ushort)(short)delta << 16)));
+            var lParam = PackPoint(x, y);
+            NativeMethods.PostMessageW(hwnd, (int)NativeMethods.WM.MOUSEWHEEL, wParam, (UIntPtr)lParam);
+        }
+
+        private static uint PackPoint(int x, int y) =>
+            unchecked((uint)(ushort)(short)x | ((uint)(ushort)(short)y << 16));
+
         /// <summary>
         /// Forward mouse input to the active/inactive window.
         /// </summary>
